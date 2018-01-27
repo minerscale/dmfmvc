@@ -39,6 +39,12 @@ int main(int argc, char * const* argv){
             case 2:
                 printf("DMF file is not valid. Aborting.\n");
                 break;
+            case 3:
+                printf("DMF file was not made with deflemask 12. Aborting\n");
+                break;
+            case 4:
+                printf("Somehow this dmf isn't real system. Aborting.\n");
+                break;
             default:
                 printf("Unknown error. Aborting.\n");
                 break;
@@ -46,7 +52,7 @@ int main(int argc, char * const* argv){
         return status;
     }
 
-    printf("Conversion successful!\n");
+    printf("Successful volume change!!\n");
 
     return 0;
 }
