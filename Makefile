@@ -18,7 +18,11 @@ SRC_C += $(wildcard src/*.c)
 
 OBJECTS = $(addprefix out/, $(SRC_C:.c=.o))
 
-out/%.o: %.c $(HEADERS)
+pre-build:
+	mkdir -p out/
+	mkdir -p out/src
+
+out/%.o: %.c $(HEADERS) pre-build
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
