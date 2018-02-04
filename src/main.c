@@ -3,8 +3,10 @@
 #include <ctype.h>
 
 #include "dmfParser.h"
+#include "test.h"
 
-int main(int argc, char * const* argv){
+int main(int argc, char * const* argv)
+{
     int c;
 
     while ((c = getopt (argc, argv, "o:")) != -1){
@@ -29,7 +31,8 @@ int main(int argc, char * const* argv){
         return 1;
     }
 
-    int status = parseDMF(argv[optind]);
+    dmf song;
+    int status = parseDMF(argv[optind], &song);
     if (status != 0){
         switch (status)
         {
@@ -52,7 +55,6 @@ int main(int argc, char * const* argv){
         return status;
     }
 
-    printf("Successful volume change!!\n");
-
+    test(song);
     return 0;
 }

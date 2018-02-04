@@ -1,7 +1,8 @@
 TARGET = out/dmfmvc
 LIBS = -lm
 CC = gcc
-CFLAGS = -Wall -Iinc -flto -O3 -g
+#CFLAGS = -Wall -Iinc -flto -O3 -g
+CFLAGS = -Wall -Iinc -g
 CHMOD = chmod
 
 .PHONY: default all clean
