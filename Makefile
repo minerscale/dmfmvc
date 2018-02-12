@@ -1,8 +1,7 @@
 TARGET = out/dmfmvc
-LIBS = 
 CC = gcc
-#CFLAGS = -Wall -Iinc -flto -O3 -g
-CFLAGS = -Wall -Iinc -g
+CFLAGS = -Wall -Iinc -flto -O3 -g
+#CFLAGS = -Wall -Iinc -g
 CHMOD = chmod
 
 .PHONY: default all clean
@@ -28,7 +27,7 @@ out/%.o: %.c $(HEADERS) pre-build
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) $(CFLAGS) $(LIBS) -o $@
+	$(CC) -Wl,-rpath,./ -L./lib $(OBJECTS) $(CFLAGS) -ldmf -o $@
 	$(CHMOD) +x $@
 
 clean:

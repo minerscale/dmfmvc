@@ -3,8 +3,7 @@
 #include <unistd.h>
 #include <ctype.h>
 
-#include "dmfParser.h"
-#include "test.h"
+#include "dmf-parser.h"
 
 void throw(int status){
     if (status != 0){
