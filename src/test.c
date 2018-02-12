@@ -1,8 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "dmfParser.h"
 #include "test.h"
 
-void test(dmf song){
+void display_dmf(dmf song){
     printf("system: %d\n", song.system);
     printf("system_total_channels: %d\n", song.system_total_channels);
     
@@ -182,20 +183,20 @@ void test(dmf song){
                     else
                         printf("|%s%d", noteStr, song.channels[i].rows[j][k].octave);
 
-                    if (song.channels[i].rows[j][k].volume == 0xFF)
+                    if (song.channels[i].rows[j][k].volume == -1)
                         printf(" --|");   
                     else
                         printf(" %02X|", song.channels[i].rows[j][k].volume);
 
-                    if (song.channels[i].rows[j][k].instrument == 0xFF)
+                    if (song.channels[i].rows[j][k].instrument == -1)
                         printf("-- ");
                     else
                         printf("%02X ", song.channels[i].rows[j][k].instrument);
 
                     for (int l = 0; l < song.channels[i].effect_columns_count; ++l){
-                        if (song.channels[i].rows[j][k].commands[l].code == 0xFF) printf("--");
+                        if (song.channels[i].rows[j][k].commands[l].code == -1) printf("--");
                         else printf("%02X", song.channels[i].rows[j][k].commands[l].code);
-                        if (song.channels[i].rows[j][k].commands[l].value == 0xFF) printf(" --|");
+                        if (song.channels[i].rows[j][k].commands[l].value == -1) printf(" --|");
                         else printf(" %02X|", song.channels[i].rows[j][k].commands[l].value);
                     }
                     printf("\n");
@@ -213,4 +214,28 @@ void test(dmf song){
 
         }
     }
+}
+
+int verify_dmf(char *filename){
+    u8 *original = malloc(MAX_DMF_SIZE);
+    int status = openDMF(filename, original);
+    if (status) return status;
+
+    dmf song;
+    status = parseDMF(original, &song);
+    if (status) return status;
+
+    u8 *parsed = malloc(MAX_DMF_SIZE);
+    size_t sizeOfParsed;
+    dmfToBuffer (song, parsed, &sizeOfParsed);
+
+    for (int i = 0; i < sizeOfParsed; ++i){
+        if (original[i] != parsed[i]){
+            printf("Uh Oh! These aren't the same! D: PLS EMAIL ME ABOUT THIS MESSAGE at 'aaronjcottle (at) gmail (dot) cum'\n");
+            return -1;
+        }
+    }
+    printf("Verified Working!\n");
+
+    return 0;
 }

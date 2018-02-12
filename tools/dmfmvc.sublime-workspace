@@ -243,23 +243,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "/home/aaron/programming/dmfmvc/out/test.dmf",
-			"settings":
-			{
-				"buffer_size": 260,
-				"encoding": "Hexadecimal",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/aaron/programming/botbapi/botbGraph.py",
-			"settings":
-			{
-				"buffer_size": 0,
-				"line_ending": "Unix"
-			}
-		}
 	],
 	"build_system": "Build",
 	"build_system_choices":
@@ -337,15 +320,24 @@
 	[
 		"/home/aaron/programming/dmfmvc",
 		"/home/aaron/programming/dmfmvc/inc",
-		"/home/aaron/programming/dmfmvc/out",
-		"/home/aaron/programming/dmfmvc/src"
+		"/home/aaron/programming/dmfmvc/src",
+		"/home/aaron/programming/dmfmvc/tools"
 	],
 	"file_history":
 	[
 		"/home/aaron/programming/dmfmvc/inc/dmfParser.h",
 		"/home/aaron/programming/dmfmvc/src/dmfParser.c",
+		"/home/aaron/programming/dmfmvc/src/test.c",
 		"/home/aaron/programming/dmfmvc/src/main.c",
+		"/home/aaron/programming/dmfmvc/inc/test.h",
 		"/home/aaron/programming/dmfmvc/Makefile",
+		"/home/aaron/Downloads/html.txt",
+		"/home/aaron/programming/dmfmvc/dick.txt",
+		"/home/aaron/Downloads/BotB 27419 funute - tiny rave.js",
+		"/home/aaron/programming/discord_emoji.py",
+		"/home/aaron/programming/dmfmvc/out/dump.txt",
+		"/home/aaron/programming/dmfmvc/out/test.txt",
+		"/home/aaron/programming/botbapi/botbGraph.py",
 		"/home/aaron/programming/fucc.py",
 		"/home/aaron/programming/dmfmvc/.git/FETCH_HEAD",
 		"/home/aaron/programming/dmfmvc/.git/HEAD",
@@ -355,7 +347,6 @@
 		"/home/aaron/Desktop/cron.example.output.txt.exe.txt.bin.txt",
 		"/home/aaron/programming/dmfmvc/LICENCE",
 		"/home/aaron/programming/find-replace.txt",
-		"/home/aaron/programming/dmfmvc/out/test.txt",
 		"/home/aaron/programming/dmfmvc/out/fuck.txt",
 		"/home/aaron/programming/dmfVolumeChanger/dmfVolumeChanger.sublime-project",
 		"/home/aaron/software/deflemask/ERROR.log",
@@ -461,15 +452,7 @@
 		"/home/aaron/programming/genesis-rpg/inc/npc.h",
 		"/home/aaron/programming/genesis-rpg/inc/sound.h",
 		"/home/aaron/Downloads/oh.py",
-		"/home/aaron/Downloads/recursive",
-		"/home/aaron/programming/TestROM/src/boot/rom_head.c",
-		"/usr/share/kega-fusion/Fusion.ini",
-		"/home/aaron/programming/genesis-rpg/src/echo.c",
-		"/home/aaron/programming/genesis-rpg/inc/stateSwitcher.h",
-		"/home/aaron/programming/lever/package.json",
-		"/home/aaron/programming/lever/.gitignore",
-		"/home/aaron/programming/Lever/Levels/myLevel.lev",
-		"/home/aaron/programming/Lever/Levels/super.lev"
+		"/home/aaron/Downloads/recursive"
 	],
 	"find":
 	{
@@ -488,6 +471,39 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"printf",
+			"parseDmf",
+			"hash",
+			"m_hash",
+			"hash",
+			"src->",
+			"ret",
+			"16777216",
+			"size",
+			"buffer_len",
+			"dest",
+			"dmf",
+			"buffer",
+			"uncompress",
+			"mz_ok",
+			"mz_uncompress",
+			"MZ_OK",
+			"mz_uncompress",
+			"uncompress",
+			"ret",
+			"dmfRoot",
+			"dmftoBuffer",
+			"ret.",
+			"<tr",
+			"<tr>",
+			"<td> <a href=\"/[0-z ]*\" title=\"[0-z ]*\">",
+			"<td> <a href=\"/[0-z]*\" title",
+			"<td> <a href=\"/[0-z]*\" class=\"mw-redirect\" title=\"[0-z]*\">",
+			"== 0xFF",
+			"#",
+			"([0-z]*)",
+			"*dmfp++",
+			"j",
 			"channel",
 			"pattern",
 			"\\*dmfp;\\n( *)\\+\\+dmfp;",
@@ -540,9 +556,20 @@
 		"highlight": true,
 		"in_selection": false,
 		"preserve_case": false,
-		"regex": true,
+		"regex": false,
 		"replace_history":
 		[
+			"src.",
+			"dest",
+			"MAX_DMF_SIZE",
+			"src",
+			"dmf",
+			"decompressed_dmf",
+			"ret->",
+			"== -1",
+			"*bp = ret.instruments[i].\\1;\\n++bp;",
+			"*bp = ret.instruments[i].FM_Operators[j].\\1;\\n++bp;",
+			"\\1",
 			"*dmfp++;",
 			"printf(\"Instrument %d: \\1: %d\\\\n\", i, song.instruments[i].\\1);",
 			"printf(\"Instrument %d: Operator %d: \\1: %d\\\\n\", i, k + 1, song.instruments[i].FM_operators[k].\\1);",
@@ -588,71 +615,14 @@
 	"groups":
 	[
 		{
-			"selected": 1,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "/home/aaron/programming/dmfmvc/out/test.dmf",
-					"semi_transient": true,
-					"settings":
-					{
-						"buffer_size": 260,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "/home/aaron/programming/botbapi/botbGraph.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 0,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				}
 			]
 		}
 	],
 	"incremental_find":
 	{
-		"height": 30.0
+		"height": 34.0
 	},
 	"input":
 	{
@@ -713,7 +683,7 @@
 		[
 			[
 				"",
-				"~/programming/genesis-rpg/tools/genesis-rpg.sublime-project"
+				"~/programming/NotWorkingOn/dt_arduino/dt_arduino.sublime-project"
 			]
 		],
 		"width": 380.0

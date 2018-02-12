@@ -1,45 +1,59 @@
 #include "dmfParser.h"
 #include "miniz.h"
 
-int openDMF(char *filename, unsigned char *dest)
-{
+int openFileIntoBuffer(char *filename, unsigned char *dest, size_t *length){
     FILE *fp = fopen(filename, "rb");
-
-    // Max size of decompressed DMF is 16MiB
-    // Shouldn't be a problem though
-    mz_ulong dest_len = 16777216; 
 
     // Get size of file
     fseek(fp, 0, SEEK_END);
-    mz_ulong lengthOfFile = ftell(fp);
+    size_t lengthOfFile = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
     // Read the file into a buffer
-    unsigned char *buffer = (u8 *)malloc(lengthOfFile);
-    if(fread(buffer, lengthOfFile, 1, fp) == 0){
+    if(fread(dest, lengthOfFile, 1, fp) == 0){
         fclose(fp);
         return 1; // Unable to open file
     }
     fclose(fp);
+    *length = lengthOfFile;
 
-    // Decompress the dmf and store it in the buffer
-    int cmp_status = uncompress(dest, &dest_len, buffer, lengthOfFile);
+    return 0;
+}
+
+int decompressDMF(unsigned char *src, size_t src_length, unsigned char *dest)
+{
+    // Max size of decompressed DMF is 16MiB
+    // Shouldn't be a problem though
+    mz_ulong dest_len = MAX_DMF_SIZE;
+
+    // Decompress the dmf and store it in the dest
+    int cmp_status = uncompress(dest, &dest_len, src, src_length);
     if (cmp_status) return 2; // Not valid DMF
 
-    free (buffer);
     return 0; // Successful
 }
 
-int parseDMF(char *filename, dmf *ret)
+int openDMF(char *filename, unsigned char *dest)
 {
     // Decompress the dmf
-    unsigned char *dmfRoot = (u8 *)malloc(16777216);
-    int status = openDMF(filename, dmfRoot);
-    if(status){
-        return status;
-    }
+    unsigned char *compressedBuffer = (u8 *)malloc(MAX_DMF_SIZE);
+    size_t bufferLength;
+    int status = openFileIntoBuffer(filename, compressedBuffer, &bufferLength);
+    if(status) return status;
 
-    unsigned char *dmfp = dmfRoot; // Pointer to the current spot
+    status = decompressDMF(compressedBuffer, bufferLength, dest);
+    if(status) return status;
+
+    return 0;
+}
+
+int parseDMF(unsigned char *decompressed_dmf, dmf *dest)
+{
+    //u8 *decompressed_dmf = (u8 *)malloc(MAX_DMF_SIZE);
+    //int status = openDMF(filename, decompressed_dmf);
+    //if (status) return status;
+
+    unsigned char *dmfp = decompressed_dmf; // Pointer to the current spot
 
     // Get the version and quit if it's invalid
     dmfp += 16;
@@ -47,36 +61,36 @@ int parseDMF(char *filename, dmf *ret)
 
     // Get the system
     ++dmfp;
-    ret->system = *dmfp;
+    dest->system = *dmfp;
 
     // Set the total channels based off system
-    switch (ret->system){
+    switch (dest->system){
         case SYSTEM_GENESIS:
-            ret->system_total_channels = 10;
+            dest->system_total_channels = 10;
             break;
         case SYSTEM_GENESIS_EXT_CH3:
-            ret->system_total_channels = 13;
+            dest->system_total_channels = 13;
             break;
         case SYSTEM_SMS:
-            ret->system_total_channels = 4;
+            dest->system_total_channels = 4;
             break;
         case SYSTEM_GAMEBOY:
-            ret->system_total_channels = 4;
+            dest->system_total_channels = 4;
             break;
         case SYSTEM_PCENGINE:
-            ret->system_total_channels = 6;
+            dest->system_total_channels = 6;
             break;
         case SYSTEM_NES:
-            ret->system_total_channels = 5;
+            dest->system_total_channels = 5;
             break;
         case SYSTEM_C64_SID_8580:
-            ret->system_total_channels = 3;
+            dest->system_total_channels = 3;
             break;
         case SYSTEM_C64_SID_6581:
-            ret->system_total_channels = 3;
+            dest->system_total_channels = 3;
             break;
         case SYSTEM_YM2151:
-            ret->system_total_channels = 13;
+            dest->system_total_channels = 13;
             break;
         default:
             return 4; // Not a real system???
@@ -84,178 +98,178 @@ int parseDMF(char *filename, dmf *ret)
 
     // Get the song name and the length
     ++dmfp;
-    ret->name = (char *)calloc(*dmfp + 1, 1);
-    memcpy (ret->name, dmfp + 1, *dmfp);
-    ret->name_length = *dmfp;
+    dest->name = (char *)calloc(*dmfp + 1, 1);
+    memcpy (dest->name, dmfp + 1, *dmfp);
+    dest->name_length = *dmfp;
 
     dmfp += *dmfp + 1;
 
     // Get the song author and the length
-    ret->author = (char *)calloc(*dmfp + 1, 1);
-    memcpy (ret->author, dmfp + 1, *dmfp);
-    ret->author_length = *dmfp;
+    dest->author = (char *)calloc(*dmfp + 1, 1);
+    memcpy (dest->author, dmfp + 1, *dmfp);
+    dest->author_length = *dmfp;
 
     dmfp += *dmfp + 1;
 
     // Get the highlights
-    ret->highlight_A = *dmfp++;
-    ret->highlight_B = *dmfp++;
+    dest->highlight_A = *dmfp++;
+    dest->highlight_B = *dmfp++;
 
     // Timing info
-    ret->time_base = *dmfp++;
-    ret->tick_time_1 = *dmfp++;
-    ret->tick_time_2 = *dmfp++;
+    dest->time_base = *dmfp++;
+    dest->tick_time_1 = *dmfp++;
+    dest->tick_time_2 = *dmfp++;
 
     // Frequency
-    ret->reigon = *dmfp++;
-    ret->custom_hz_on = *dmfp++;
+    dest->reigon = *dmfp++;
+    dest->custom_hz_on = *dmfp++;
 
     // Custom_hz in the file is stored in ASCII *why*
-    ret->custom_hz = (*dmfp - 0x30 >= 0) ? (*dmfp - 0x30) * 100 : 0;
+    dest->custom_hz = (*dmfp - 0x30 >= 0) ? (*dmfp - 0x30) * 100 : 0;
     ++dmfp;
-    ret->custom_hz = (*dmfp - 0x30 >= 0) ? (ret->custom_hz + (*dmfp - 0x30) * 10) : ret->custom_hz / 10;
+    dest->custom_hz = (*dmfp - 0x30 >= 0) ? (dest->custom_hz + (*dmfp - 0x30) * 10) : dest->custom_hz / 10;
     ++dmfp;
-    ret->custom_hz = (*dmfp - 0x30 >= 0) ? (ret->custom_hz + (*dmfp - 0x30)) : ret->custom_hz / 10;
+    dest->custom_hz = (*dmfp - 0x30 >= 0) ? (dest->custom_hz + (*dmfp - 0x30)) : dest->custom_hz / 10;
     ++dmfp;
 
     // Pattern matrix stuff
-    ret->total_rows_per_pattern = *dmfp;
+    dest->total_rows_per_pattern = *dmfp;
     dmfp += 4;
-    ret->total_rows_in_pattern_matrix = *dmfp++;
+    dest->total_rows_in_pattern_matrix = *dmfp++;
 
     // Create the instrument array, It's a dynamically allocated 2d array
-    ret->pattern_matrix_value = (u8 **)malloc(ret->system_total_channels * sizeof(u8 *));
+    dest->pattern_matrix_value = (u8 **)malloc(dest->system_total_channels * sizeof(u8 *));
 
-    for (int i = 0; i < ret->system_total_channels; i++){
-        ret->pattern_matrix_value[i] = (u8 *)malloc(ret->total_rows_in_pattern_matrix * sizeof(u8));
+    for (int i = 0; i < dest->system_total_channels; i++){
+        dest->pattern_matrix_value[i] = (u8 *)malloc(dest->total_rows_in_pattern_matrix * sizeof(u8));
     }
 
     // Set the dmf data
-    for (int i = 0; i < ret->system_total_channels; i++){
-        for (int j = 0; j < ret->total_rows_in_pattern_matrix; j++){
-            ret->pattern_matrix_value[i][j] = *dmfp++;
+    for (int i = 0; i < dest->system_total_channels; i++){
+        for (int j = 0; j < dest->total_rows_in_pattern_matrix; j++){
+            dest->pattern_matrix_value[i][j] = *dmfp++;
         }
     }
 
     // Instrument data
-    ret->total_instruments = *dmfp++;
+    dest->total_instruments = *dmfp++;
 
-    ret->instruments = (instrument *)malloc(sizeof(instrument) * ret->total_instruments);
-    for (int i = 0; i < ret->total_instruments; ++i){
-        ret->instruments[i].name_length = *dmfp;
+    dest->instruments = (instrument *)malloc(sizeof(instrument) * dest->total_instruments);
+    for (int i = 0; i < dest->total_instruments; ++i){
+        dest->instruments[i].name_length = *dmfp;
         // Create the name array
-        ret->instruments[i].name = (u8 *)calloc(*dmfp + 1, 1);
-        memcpy(ret->instruments[i].name, dmfp + 1, *dmfp);
+        dest->instruments[i].name = (u8 *)calloc(*dmfp + 1, 1);
+        memcpy(dest->instruments[i].name, dmfp + 1, *dmfp);
         dmfp += *dmfp + 1;
 
         // Get the mode of the instrument (STD/FM)
-        ret->instruments[i].mode = *dmfp++;
+        dest->instruments[i].mode = *dmfp++;
 
-        if (ret->instruments[i].mode == MODE_FM){
-            ret->instruments[i].ALG = *dmfp++;
-            ret->instruments[i].FB = *dmfp++;
-            ret->instruments[i].LFO = *dmfp++;
-            ret->instruments[i].LFO2 = *dmfp++;
+        if (dest->instruments[i].mode == MODE_FM){
+            dest->instruments[i].ALG = *dmfp++;
+            dest->instruments[i].FB = *dmfp++;
+            dest->instruments[i].LFO = *dmfp++;
+            dest->instruments[i].LFO2 = *dmfp++;
 
             // Allocate the FM operators memory
-            ret->instruments[i].FM_operators = (FM_operator *)malloc(4 * sizeof(FM_operator));
+            dest->instruments[i].FM_operators = (FM_operator *)malloc(4 * sizeof(FM_operator));
             for (int j = 0; j < 4; j++){
-                ret->instruments[i].FM_operators[j].AM += *dmfp++;
-                ret->instruments[i].FM_operators[j].AR += *dmfp++;
-                ret->instruments[i].FM_operators[j].DR += *dmfp++;
-                ret->instruments[i].FM_operators[j].MULT += *dmfp++;
-                ret->instruments[i].FM_operators[j].RR += *dmfp++;
-                ret->instruments[i].FM_operators[j].SL += *dmfp++;
-                ret->instruments[i].FM_operators[j].TL += *dmfp++;
-                ret->instruments[i].FM_operators[j].DT2 += *dmfp++;
-                ret->instruments[i].FM_operators[j].RS += *dmfp++;
-                ret->instruments[i].FM_operators[j].DT += *dmfp++;
-                ret->instruments[i].FM_operators[j].D2R += *dmfp++;
-                ret->instruments[i].FM_operators[j].SSGMODE += *dmfp++;
+                dest->instruments[i].FM_operators[j].AM = *dmfp++;
+                dest->instruments[i].FM_operators[j].AR = *dmfp++;
+                dest->instruments[i].FM_operators[j].DR = *dmfp++;
+                dest->instruments[i].FM_operators[j].MULT = *dmfp++;
+                dest->instruments[i].FM_operators[j].RR = *dmfp++;
+                dest->instruments[i].FM_operators[j].SL = *dmfp++;
+                dest->instruments[i].FM_operators[j].TL = *dmfp++;
+                dest->instruments[i].FM_operators[j].DT2 = *dmfp++;
+                dest->instruments[i].FM_operators[j].RS = *dmfp++;
+                dest->instruments[i].FM_operators[j].DT = *dmfp++;
+                dest->instruments[i].FM_operators[j].D2R = *dmfp++;
+                dest->instruments[i].FM_operators[j].SSGMODE = *dmfp++;
             }
-        }else if (ret->instruments[i].mode == MODE_STD){
-            if (ret->system != SYSTEM_GAMEBOY){
+        }else if (dest->instruments[i].mode == MODE_STD){
+            if (dest->system != SYSTEM_GAMEBOY){
                 // Volume macro
-                ret->instruments[i].volume_envelope_size = *dmfp++;
+                dest->instruments[i].volume_envelope_size = *dmfp++;
 
-                ret->instruments[i].volume_envelope = (unsigned int *)malloc(ret->instruments[i].volume_envelope_size * sizeof(int));
-                for (int k = 0; k < ret->instruments[i].volume_envelope_size; k++){
-                    ret->instruments[i].volume_envelope[k] = *dmfp;
+                dest->instruments[i].volume_envelope = (unsigned int *)malloc(dest->instruments[i].volume_envelope_size * sizeof(int));
+                for (int k = 0; k < dest->instruments[i].volume_envelope_size; k++){
+                    dest->instruments[i].volume_envelope[k] = *dmfp;
                     dmfp += 4;
                 }
 
-                if (ret->instruments[i].volume_envelope_size > 0){
-                    ret->instruments[i].volume_loop_position = *dmfp++;
+                if (dest->instruments[i].volume_envelope_size > 0){
+                    dest->instruments[i].volume_loop_position = *dmfp++;
                 }
             }
 
             // Arpeggio macro
-            ret->instruments[i].arpeggio_envelope_size = *dmfp++;
+            dest->instruments[i].arpeggio_envelope_size = *dmfp++;
 
-            ret->instruments[i].arpeggio_envelope = (signed int *)malloc(ret->instruments[i].arpeggio_envelope_size * sizeof(int));
-            for (int k = 0; k < ret->instruments[i].arpeggio_envelope_size; k++){
-                ret->instruments[i].arpeggio_envelope[k] = *dmfp;
+            dest->instruments[i].arpeggio_envelope = (signed int *)malloc(dest->instruments[i].arpeggio_envelope_size * sizeof(int));
+            for (int k = 0; k < dest->instruments[i].arpeggio_envelope_size; k++){
+                dest->instruments[i].arpeggio_envelope[k] = *dmfp;
                 dmfp += 4;
             }
 
-            if (ret->instruments[i].arpeggio_envelope_size > 0){
-                ret->instruments[i].arpeggio_loop_position = *dmfp++;
+            if (dest->instruments[i].arpeggio_envelope_size > 0){
+                dest->instruments[i].arpeggio_loop_position = *dmfp++;
             }
-            ret->instruments[i].arpeggio_macro_mode = *dmfp++;
+            dest->instruments[i].arpeggio_macro_mode = *dmfp++;
 
             // Duty/Noise macro:
-            ret->instruments[i].duty_noise_envelope_size = *dmfp++;
+            dest->instruments[i].duty_noise_envelope_size = *dmfp++;
 
-            ret->instruments[i].duty_noise_envelope = (unsigned int *)malloc(ret->instruments[i].duty_noise_envelope_size * sizeof(int));
-            for (int k = 0; k < ret->instruments[i].duty_noise_envelope_size; k++){
-                ret->instruments[i].duty_noise_envelope[k] = *dmfp;
+            dest->instruments[i].duty_noise_envelope = (unsigned int *)malloc(dest->instruments[i].duty_noise_envelope_size * sizeof(int));
+            for (int k = 0; k < dest->instruments[i].duty_noise_envelope_size; k++){
+                dest->instruments[i].duty_noise_envelope[k] = *dmfp;
                 dmfp += 4;
             }
 
-            if (ret->instruments[i].duty_noise_envelope_size > 0){
-                ret->instruments[i].duty_noise_loop_position = *dmfp++;
+            if (dest->instruments[i].duty_noise_envelope_size > 0){
+                dest->instruments[i].duty_noise_loop_position = *dmfp++;
             }
 
             // Wavetable macro:
-            ret->instruments[i].wavetable_envelope_size = *dmfp++;
+            dest->instruments[i].wavetable_envelope_size = *dmfp++;
 
-            ret->instruments[i].wavetable_envelope = (unsigned int *)malloc(ret->instruments[i].wavetable_envelope_size * sizeof(int));
-            for (int k = 0; k < ret->instruments[i].wavetable_envelope_size; k++){
-                ret->instruments[i].wavetable_envelope[k] = *dmfp;
+            dest->instruments[i].wavetable_envelope = (unsigned int *)malloc(dest->instruments[i].wavetable_envelope_size * sizeof(int));
+            for (int k = 0; k < dest->instruments[i].wavetable_envelope_size; k++){
+                dest->instruments[i].wavetable_envelope[k] = *dmfp;
                 dmfp += 4;
             }
 
-            if (ret->instruments[i].wavetable_envelope_size > 0){
-                ret->instruments[i].wavetable_loop_position = *dmfp++;
+            if (dest->instruments[i].wavetable_envelope_size > 0){
+                dest->instruments[i].wavetable_loop_position = *dmfp++;
             }
 
             // PER SYSTEM DATA
-            if (ret->system == SYSTEM_C64_SID_8580 || ret->system == SYSTEM_C64_SID_6581){
-                ret->instruments[i].c64_triangle_wave_enabled = *dmfp++;
-                ret->instruments[i].c64_saw_wave_enabled = *dmfp++;
-                ret->instruments[i].c64_pulse_wave_enabled = *dmfp++;
-                ret->instruments[i].c64_noise_wave_enabled = *dmfp++;
-                ret->instruments[i].c64_attack = *dmfp++;
-                ret->instruments[i].c64_decay = *dmfp++;
-                ret->instruments[i].c64_sustain = *dmfp++;
-                ret->instruments[i].c64_release = *dmfp++;
-                ret->instruments[i].c64_pulse_width = *dmfp++;
-                ret->instruments[i].c64_ring_modulation_enabled = *dmfp++;
-                ret->instruments[i].c64_sync_modulation_enabled = *dmfp++;
-                ret->instruments[i].c64_to_filter = *dmfp++;
-                ret->instruments[i].c64_volume_macro_to_filter_cutoff_enabled = *dmfp++;
-                ret->instruments[i].c64_use_filter_values_from_instrument = *dmfp++;
-                ret->instruments[i].c64_filter_resonance = *dmfp++;
-                ret->instruments[i].c64_filter_cutoff = *dmfp++;
-                ret->instruments[i].c64_filter_high_pass = *dmfp++;
-                ret->instruments[i].c64_filter_band_pass = *dmfp++;
-                ret->instruments[i].c64_filter_low_pass = *dmfp++;
-                ret->instruments[i].c64_filter_ch2_off = *dmfp++;
-            }else if (ret->system == SYSTEM_GAMEBOY){
-                ret->instruments[i].gb_envelope_volume = *dmfp++;
-                ret->instruments[i].gb_envelope_direction = *dmfp++;
-                ret->instruments[i].gb_envelope_length = *dmfp++;
-                ret->instruments[i].gb_sound_length = *dmfp++;
+            if (dest->system == SYSTEM_C64_SID_8580 || dest->system == SYSTEM_C64_SID_6581){
+                dest->instruments[i].c64_triangle_wave_enabled = *dmfp++;
+                dest->instruments[i].c64_saw_wave_enabled = *dmfp++;
+                dest->instruments[i].c64_pulse_wave_enabled = *dmfp++;
+                dest->instruments[i].c64_noise_wave_enabled = *dmfp++;
+                dest->instruments[i].c64_attack = *dmfp++;
+                dest->instruments[i].c64_decay = *dmfp++;
+                dest->instruments[i].c64_sustain = *dmfp++;
+                dest->instruments[i].c64_release = *dmfp++;
+                dest->instruments[i].c64_pulse_width = *dmfp++;
+                dest->instruments[i].c64_ring_modulation_enabled = *dmfp++;
+                dest->instruments[i].c64_sync_modulation_enabled = *dmfp++;
+                dest->instruments[i].c64_to_filter = *dmfp++;
+                dest->instruments[i].c64_volume_macro_to_filter_cutoff_enabled = *dmfp++;
+                dest->instruments[i].c64_use_filter_values_from_instrument = *dmfp++;
+                dest->instruments[i].c64_filter_resonance = *dmfp++;
+                dest->instruments[i].c64_filter_cutoff = *dmfp++;
+                dest->instruments[i].c64_filter_high_pass = *dmfp++;
+                dest->instruments[i].c64_filter_band_pass = *dmfp++;
+                dest->instruments[i].c64_filter_low_pass = *dmfp++;
+                dest->instruments[i].c64_filter_ch2_off = *dmfp++;
+            }else if (dest->system == SYSTEM_GAMEBOY){
+                dest->instruments[i].gb_envelope_volume = *dmfp++;
+                dest->instruments[i].gb_envelope_direction = *dmfp++;
+                dest->instruments[i].gb_envelope_length = *dmfp++;
+                dest->instruments[i].gb_sound_length = *dmfp++;
             }
         }else{
             return 2; // Not a valid dmf.
@@ -263,74 +277,398 @@ int parseDMF(char *filename, dmf *ret)
     }
 
     // Wavetables
-    ret->total_wavetables = *dmfp++;
-    ret->wavetables = (wavetable *)malloc(ret->total_wavetables * sizeof(wavetable));
-    for (int i = 0; i < ret->total_wavetables; ++i){
-        ret->wavetables[i].size = *dmfp;
+    dest->total_wavetables = *dmfp++;
+    dest->wavetables = (wavetable *)malloc(dest->total_wavetables * sizeof(wavetable));
+    for (int i = 0; i < dest->total_wavetables; ++i){
+        dest->wavetables[i].size = *dmfp;
         dmfp += 4;
-        ret->wavetables[i].data = (unsigned int *)malloc(ret->wavetables[i].size * sizeof(unsigned int));
-        for (int j = 0; j < ret->wavetables[i].size; ++j){
-            ret->wavetables[i].data[j] = *dmfp;
+        dest->wavetables[i].data = (unsigned int *)malloc(dest->wavetables[i].size * sizeof(unsigned int));
+        for (int j = 0; j < dest->wavetables[i].size; ++j){
+            dest->wavetables[i].data[j] = *dmfp;
             dmfp += 4;
         }
     }
 
     // Notes!
-    ret->channels = malloc(ret->system_total_channels * sizeof(note_channel));
-    for (int i = 0; i < ret->system_total_channels; ++i){
-        ret->channels[i].effect_columns_count = *dmfp++;
+    dest->channels = malloc(dest->system_total_channels * sizeof(note_channel));
+    for (int i = 0; i < dest->system_total_channels; ++i){
+        dest->channels[i].effect_columns_count = *dmfp++;
 
         // Allocate 2D array
-        ret->channels[i].rows = (note_row **)malloc(ret->total_rows_in_pattern_matrix * sizeof(note_row *));
-        for (int z = 0; z < ret->total_rows_in_pattern_matrix; z++){
-            ret->channels[i].rows[z] = (note_row *)malloc(ret->total_rows_per_pattern * sizeof(note_row));
+        dest->channels[i].rows = (note_row **)malloc(dest->total_rows_in_pattern_matrix * sizeof(note_row *));
+        for (int z = 0; z < dest->total_rows_in_pattern_matrix; z++){
+            dest->channels[i].rows[z] = (note_row *)malloc(dest->total_rows_per_pattern * sizeof(note_row));
         }
 
-        for (int j = 0; j < ret->total_rows_in_pattern_matrix; ++j){
-            for (int k = 0; k < ret->total_rows_per_pattern; ++k){
-                ret->channels[i].rows[j][k].note = *dmfp;
+        for (int j = 0; j < dest->total_rows_in_pattern_matrix; ++j){
+            for (int k = 0; k < dest->total_rows_per_pattern; ++k){
+                dest->channels[i].rows[j][k].note = *dmfp;
                 dmfp += 2;
-                ret->channels[i].rows[j][k].octave = *dmfp;
+                dest->channels[i].rows[j][k].octave = *dmfp;
                 dmfp += 2;
-                ret->channels[i].rows[j][k].volume = *dmfp;
+                dest->channels[i].rows[j][k].volume = *(s16 *)dmfp;
                 dmfp += 2;
 
-                ret->channels[i].rows[j][k].commands = (note_command *)malloc(ret->channels[i].effect_columns_count * sizeof(note_command));
-                for (int m = 0; m < ret->channels[i].effect_columns_count; ++m){
-                    ret->channels[i].rows[j][k].commands[m].code = *dmfp;
+                dest->channels[i].rows[j][k].commands = (note_command *)malloc(dest->channels[i].effect_columns_count * sizeof(note_command));
+                for (int m = 0; m < dest->channels[i].effect_columns_count; ++m){
+                    dest->channels[i].rows[j][k].commands[m].code = *(s16 *)dmfp;
                     dmfp += 2;
-                    ret->channels[i].rows[j][k].commands[m].value = *dmfp;
+                    dest->channels[i].rows[j][k].commands[m].value = *(s16 *)dmfp;
                     dmfp += 2;
                 }
-                ret->channels[i].rows[j][k].instrument = *dmfp;
+                dest->channels[i].rows[j][k].instrument = *(s16 *)dmfp;
                 dmfp += 2;
             }
         }
     }
 
-    ret->total_samples = *dmfp++;
-    ret->samples = (sample *)malloc(ret->total_samples * sizeof(sample));
-    for (int i = 0; i < ret->total_samples; ++i){
-        printf("Offset: %X\n", (int)(dmfp - dmfRoot));
-        ret->samples[i].size = (unsigned int)*dmfp;
+    dest->total_samples = *dmfp++;
+    dest->samples = (sample *)malloc(dest->total_samples * sizeof(sample));
+    for (int i = 0; i < dest->total_samples; ++i){
+        dest->samples[i].size = *(unsigned int *)dmfp;
         dmfp += 4;
 
-        ret->samples[i].name_length = *dmfp++;
-        ret->samples[i].name = (u8 *)calloc(ret->samples[i].name_length + 1 * sizeof(u8 *), 1);
-        memcpy (ret->samples[i].name, dmfp, ret->samples[i].name_length);
-        dmfp += ret->samples[i].name_length + 1;
+        dest->samples[i].name_length = *dmfp++;
+        dest->samples[i].name = (u8 *)calloc(dest->samples[i].name_length + 1 * sizeof(u8 *), 1);
+        memcpy (dest->samples[i].name, dmfp, dest->samples[i].name_length);
+        dmfp += dest->samples[i].name_length;
 
-        ret->samples[i].rate = *dmfp++;
-        ret->samples[i].pitch = *dmfp++;
-        ret->samples[i].amp = *dmfp++;
-        ret->samples[i].bits = *dmfp++;
+        dest->samples[i].rate = *dmfp++;
+        dest->samples[i].pitch = *dmfp++;
+        dest->samples[i].amp = *dmfp++;
+        dest->samples[i].bits = *dmfp++;
 
-        ret->samples[i].data = (u16 *)malloc(ret->samples[i].size * sizeof(u16));
-        for (int j = 0; j < ret->samples[i].size; ++j){
-            ret->samples[i].data[j] = *dmfp;
+        dest->samples[i].data = (u16 *)malloc(dest->samples[i].size * sizeof(u16));
+        for (int j = 0; j < dest->samples[i].size; ++j){
+            dest->samples[i].data[j] = *dmfp;
             dmfp += 2;
         }
     }
 
     return 0; // Successful
+}
+
+int fileToDmfType(char *filename, dmf *dest)
+{
+    u8 *buffer = (u8 *)malloc(MAX_DMF_SIZE);
+    int status = openDMF(filename, buffer);
+    if (status) return status;
+
+    status = parseDMF(buffer, dest);
+    if (status) return status;
+    return 0;
+}
+
+int dmfToBuffer(dmf src, unsigned char *dest, size_t *size){
+    u8 *bp = dest; // British Petrol
+    // Mime type and version
+    char *str = ".DelekDefleMask.\x18";
+    memcpy(bp, str, strlen(str));
+    bp += 17;
+
+    // SYSTEM
+    *bp = src.system;
+    ++bp;
+
+    // VISUAL INFORMATION
+    *bp = src.name_length;
+    ++bp;
+    memcpy(bp, src.name, src.name_length);
+    bp += src.name_length;
+
+    *bp = src.author_length;
+    ++bp;
+    memcpy(bp, src.author, src.author_length);
+    bp += src.author_length;
+
+    *bp = src.highlight_A;
+    ++bp;
+    *bp = src.highlight_B;
+    ++bp;
+
+    // MODULE INFORMATION
+    *bp = src.time_base;
+    ++bp;
+    *bp = src.tick_time_1;
+    ++bp;
+    *bp = src.tick_time_2;
+    ++bp;
+    *bp = src.reigon;
+    ++bp;
+    *bp = src.custom_hz_on;
+    ++bp;
+
+    // This is not convenient as now I can't bit-perfectly redo this :(
+    // There's a check if there is nothing... Other than that, I'm fucked.
+    // if custom hz is used sensibly this should work *most* of the time.
+    if (src.custom_hz > 0){
+        sprintf((char *)bp, "%d", src.custom_hz);
+    }
+    bp += 3;
+
+    *(int *)bp = src.total_rows_per_pattern;
+    bp += 4;
+
+    *bp = src.total_rows_in_pattern_matrix;
+    ++bp;
+
+    // PATTERN MATRIX VALUES
+    for (int i = 0; i < src.system_total_channels; ++i){
+        for (int j = 0; j < src.total_rows_in_pattern_matrix; ++j){
+            *bp = src.pattern_matrix_value[i][j];
+            ++bp;
+        }
+    }
+
+    *bp = src.total_instruments;
+    ++bp;
+    for (int i = 0; i < src.total_instruments; ++i){
+        *bp = src.instruments[i].name_length;
+        ++bp;
+
+        memcpy(bp, src.instruments[i].name, (size_t)src.instruments[i].name_length);
+        bp += src.instruments[i].name_length;
+
+        *bp = src.instruments[i].mode;
+        ++bp;
+
+        // FM INSTRUMENTS DATA
+        if (src.instruments[i].mode == MODE_FM){
+            *bp = src.instruments[i].ALG;
+            ++bp;
+            *bp = src.instruments[i].FB;
+            ++bp;
+            *bp = src.instruments[i].LFO;
+            ++bp;
+            *bp = src.instruments[i].LFO2;
+            ++bp;
+
+            for (int j = 0; j < 4; j++){
+                *bp = src.instruments[i].FM_operators[j].AM;
+                ++bp;
+                *bp = src.instruments[i].FM_operators[j].AR;
+                ++bp;
+                *bp = src.instruments[i].FM_operators[j].DR;
+                ++bp;
+                *bp = src.instruments[i].FM_operators[j].MULT;
+                ++bp;
+                *bp = src.instruments[i].FM_operators[j].RR;
+                ++bp;
+                *bp = src.instruments[i].FM_operators[j].SL;
+                ++bp;
+                *bp = src.instruments[i].FM_operators[j].TL;
+                ++bp;
+                *bp = src.instruments[i].FM_operators[j].DT2;
+                ++bp;
+                *bp = src.instruments[i].FM_operators[j].RS;
+                ++bp;
+                *bp = src.instruments[i].FM_operators[j].DT;
+                ++bp;
+                *bp = src.instruments[i].FM_operators[j].D2R;
+                ++bp;
+                *bp = src.instruments[i].FM_operators[j].SSGMODE;
+                ++bp;
+            }
+        }else{
+            if (src.system != SYSTEM_GAMEBOY){
+                // Volume Macro
+                *bp = src.instruments[i].volume_envelope_size;
+                ++bp;
+                for (int j = 0; j < src.instruments[i].volume_envelope_size; ++j){
+                    *(int *)bp = src.instruments[i].volume_envelope[j];
+                    bp += 4;
+                }
+                if (src.instruments[i].volume_envelope_size > 0){
+                    *bp = src.instruments[i].volume_loop_position;
+                    ++bp;
+                }
+            }
+            // Arpeggio Macro
+            *bp = src.instruments[i].arpeggio_envelope_size;
+            ++bp;
+            for (int j = 0; j < src.instruments[i].arpeggio_envelope_size; ++j){
+                *(int *)bp = src.instruments[i].arpeggio_envelope[j];
+                bp += 4;
+            }
+            if (src.instruments[i].arpeggio_envelope_size > 0){
+                *bp = src.instruments[i].arpeggio_loop_position;
+                ++bp;
+            }
+            *bp = src.instruments[i].arpeggio_macro_mode;
+            ++bp;
+
+            // Duty/Noise Macro
+            *bp = src.instruments[i].duty_noise_envelope_size;
+            ++bp;
+            for (int j = 0; j < src.instruments[i].duty_noise_envelope_size; ++j){
+                *(int *)bp = src.instruments[i].duty_noise_envelope[j];
+                bp += 4;
+            }
+            if (src.instruments[i].duty_noise_envelope_size > 0){
+                *bp = src.instruments[i].duty_noise_loop_position;
+                ++bp;
+            }
+
+            // Wavetable Macro
+            *bp = src.instruments[i].wavetable_envelope_size;
+            ++bp;
+            for (int j = 0; j < src.instruments[i].wavetable_envelope_size; ++j){
+                *(int *)bp = src.instruments[i].wavetable_envelope[j];
+                bp += 4;
+            }
+            if (src.instruments[i].wavetable_envelope_size > 0){
+                *bp = src.instruments[i].wavetable_loop_position;
+                ++bp;
+            }
+
+            // C64 stuff
+            if (src.system == SYSTEM_C64_SID_6581 || src.system == SYSTEM_C64_SID_8580){
+                *bp = src.instruments[i].c64_triangle_wave_enabled;
+                ++bp;
+                *bp = src.instruments[i].c64_saw_wave_enabled;
+                ++bp;
+                *bp = src.instruments[i].c64_pulse_wave_enabled;
+                ++bp;
+                *bp = src.instruments[i].c64_noise_wave_enabled;
+                ++bp;
+                *bp = src.instruments[i].c64_attack;
+                ++bp;
+                *bp = src.instruments[i].c64_decay;
+                ++bp;
+                *bp = src.instruments[i].c64_sustain;
+                ++bp;
+                *bp = src.instruments[i].c64_release;
+                ++bp;
+                *bp = src.instruments[i].c64_pulse_width;
+                ++bp;
+                *bp = src.instruments[i].c64_ring_modulation_enabled;
+                ++bp;
+                *bp = src.instruments[i].c64_sync_modulation_enabled;
+                ++bp;
+                *bp = src.instruments[i].c64_to_filter;
+                ++bp;
+                *bp = src.instruments[i].c64_volume_macro_to_filter_cutoff_enabled;
+                ++bp;
+                *bp = src.instruments[i].c64_use_filter_values_from_instrument;
+                ++bp;
+                // FILTER GLOBALS
+                *bp = src.instruments[i].c64_filter_resonance;
+                ++bp;
+                *bp = src.instruments[i].c64_filter_cutoff;
+                ++bp;
+                *bp = src.instruments[i].c64_filter_high_pass;
+                ++bp;
+                *bp = src.instruments[i].c64_filter_band_pass;
+                ++bp;
+                *bp = src.instruments[i].c64_filter_low_pass;
+                ++bp;
+                *bp = src.instruments[i].c64_filter_ch2_off;
+                ++bp;
+            }else if (src.system == SYSTEM_GAMEBOY){
+                *bp = src.instruments[i].gb_envelope_volume;
+                ++bp;
+                *bp = src.instruments[i].gb_envelope_direction;
+                ++bp;
+                *bp = src.instruments[i].gb_envelope_length;
+                ++bp;
+                *bp = src.instruments[i].gb_sound_length;
+                ++bp;
+            }
+        }
+    }
+
+    *bp = src.total_wavetables;
+    ++bp;
+    for (int i = 0; i < src.total_wavetables; ++i){
+        *(unsigned int *)bp = src.wavetables[i].size;
+        bp += 4;
+        for (int j = 0; j < src.wavetables[i].size; ++j){
+            *(unsigned int *)bp = src.wavetables[i].data[j];
+            bp += 4;
+        }
+    }
+
+    for (int i = 0; i < src.system_total_channels; ++i){
+        *bp = src.channels[i].effect_columns_count;
+        ++bp;
+
+        for (int j = 0; j < src.total_rows_in_pattern_matrix; ++j){
+            for (int k = 0; k < src.total_rows_per_pattern; ++k){
+                *(u16 *)bp = src.channels[i].rows[j][k].note;
+                bp += 2;
+                *(u16 *)bp = src.channels[i].rows[j][k].octave;
+                bp += 2;
+                *(s16 *)bp = src.channels[i].rows[j][k].volume;
+                bp += 2;
+                for (int l = 0; l < src.channels[i].effect_columns_count; ++l){
+                    *(s16 *)bp = src.channels[i].rows[j][k].commands[l].code;
+                    bp += 2;
+                    *(s16 *)bp = src.channels[i].rows[j][k].commands[l].value;
+                    bp += 2;
+                }
+                *(s16 *)bp = src.channels[i].rows[j][k].instrument;
+                bp += 2;
+            }
+        }
+    }
+
+    *bp = src.total_samples;
+    ++bp;
+
+    for (int i = 0; i < src.total_samples; ++i){
+        *(unsigned int *)bp = src.samples[i].size;
+        bp += 4;
+        *bp = src.samples[i].name_length;
+        ++bp;
+        memcpy(bp, src.samples[i].name, src.samples[i].name_length);
+        bp += src.samples[i].name_length;
+
+        *bp = src.samples[i].rate;
+        ++bp;
+        *bp = src.samples[i].pitch;
+        ++bp;
+        *bp = src.samples[i].amp;
+        ++bp;
+        *bp = src.samples[i].bits;
+        ++bp;
+
+        for (int j = 0; j < src.samples[i].size; ++j){
+            *(u16 *)bp = src.samples[i].data[j];
+            bp += 2;
+        }
+    }
+    *size = bp - dest;
+
+    return 0;
+}
+
+int compressDMF(const unsigned char *src, size_t src_length, unsigned char *dest, size_t *dest_length)
+{
+    // Decompress the dmf and store it in the dest
+    int cmp_status = mz_compress (dest, (mz_ulong *)dest_length, src, src_length);
+    if (cmp_status){
+        return (cmp_status);
+    }
+
+    return 0; // Successful
+}
+
+int writeDMF(char *filename, dmf src)
+{
+    u8 *dest = (u8 *)calloc(MAX_DMF_SIZE, 1);
+
+    size_t buffer_len;
+    int status = dmfToBuffer(src, dest, &buffer_len);
+    if (status) return status;
+
+    u8 *comp_dest = malloc(MAX_DMF_SIZE);
+    size_t comp_dest_length = MAX_DMF_SIZE;
+    status = compressDMF(dest, buffer_len, comp_dest, &comp_dest_length);
+    if (status) return status;
+    
+
+    FILE *fp = fopen(filename, "wb");
+    fwrite(comp_dest, comp_dest_length, 1, fp);
+
+    return 0;
 }

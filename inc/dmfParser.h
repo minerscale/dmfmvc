@@ -1,10 +1,14 @@
 #ifndef _DMF_PARSER_H_
 #define _DMF_PARSER_H_
 
+#include <stdio.h>
+
 #define u8 unsigned char
 #define s8 signed char
 #define u16 unsigned short
 #define s16 signed short
+
+#define MAX_DMF_SIZE           16777216
 
 // The system in the DMF
 #define SYSTEM_GENESIS         0x02 // (SYSTEM_TOTAL_CHANNELS 10)
@@ -188,6 +192,16 @@ typedef struct {
     sample *samples;
 } dmf;
 
-int parseDMF(char *filename, dmf *ret);
+// Reading files
+int openFileIntoBuffer(char *filename, unsigned char *dest, size_t *length);
+int decompressDMF(unsigned char *src, size_t src_length, unsigned char *dest);
+int openDMF(char *filename, unsigned char *dest);
+int parseDMF(unsigned char *decompressed_dmf, dmf *dest);
+int fileToDmfType(char *filename, dmf *dest);
+
+// Writing files
+int dmfToBuffer(dmf src, unsigned char *dest, size_t *size);
+int compressDMF(const unsigned char *src, size_t src_length, unsigned char *dest, size_t *dest_length);
+int writeDMF(char *filename, dmf src);
 
 #endif // _DMF_PARSER_H_
