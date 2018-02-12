@@ -23,10 +23,6 @@
                     "name": "Clean",
                     "shell_cmd": "make clean"
                 },
-                {
-                    "name": "Run",
-                    "shell_cmd": "make run"
-                },
             ]
         }
     ],

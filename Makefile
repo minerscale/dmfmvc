@@ -1,5 +1,5 @@
 TARGET = out/dmfmvc
-LIBS = -lm
+LIBS = 
 CC = gcc
 #CFLAGS = -Wall -Iinc -flto -O3 -g
 CFLAGS = -Wall -Iinc -g
@@ -9,7 +9,6 @@ CHMOD = chmod
 
 default: $(TARGET)
 all: default
-run: all
 
 HEADERS = $(wildcard *.h)
 HEADERS += $(wildcard inc/*.h)
@@ -36,6 +35,3 @@ clean:
 	-rm -f out/*.o
 	-rm -f out/src/*.o
 	-rm -f $(TARGET)
-
-run: $(TARGET)
-	cd out/ && gnome-terminal -- "../$(TARGET)"
