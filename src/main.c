@@ -1,11 +1,13 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <ctype.h>
 
+#define OPTPARSE_IMPLEMENTATION
+#include "optparse.h"
 #include "dmf-parser.h"
 
+// Display error based off what error code was sent
 void throw(int status){
+    // Pass through fine if status is 0
+    // i.e. successful
     if (status != 0){
         switch (status)
         {
@@ -16,7 +18,7 @@ void throw(int status){
                 printf("DMF file is not valid. Aborting.\n");
                 break;
             case 3:
-                printf("DMF file was not made with deflemask 12. Aborting\n");
+                printf("DMF file was not made with Deflemask 12. Aborting\n");
                 break;
             case 4:
                 printf("Somehow this dmf isn't real system. Aborting.\n");
@@ -25,7 +27,10 @@ void throw(int status){
                 printf("Invalid volume change amount. Aborting.\n");
                 break;
             case 6:
-                printf("-a is required. Aborting\n");
+                printf("'-a <value>' is required. Aborting\n");
+                break;
+            case 7:
+                printf ("Usage: dmfmvc [options] <infile>\n\n-o <outfile>  Specify the output file. (defualt none)\n-a <amount>   Specify the volume change. (Can only be positive) (defualt 0)\n-n            Subtract by the amount instead of add.\n");
                 break;
             default:
                 printf("Unknown error. Aborting.\n");
@@ -35,47 +40,51 @@ void throw(int status){
     }
 }
 
-int main(int argc, char * const* argv)
+int main(int argc, char **argv)
 {
-    int c;
     char* output_str = 0;
     char* amount_str = 0;
     int invert = 0;
     int amount = -1;
 
-    while ((c = getopt (argc, argv, "no:a:")) != -1){
-        switch (c)
+    char *infile;
+    int option;
+    struct optparse options;
+
+    optparse_init(&options, argv);
+    while ((option = optparse(&options, "no:a:")) != -1){
+        switch (option)
         {
             case 'o':
-                output_str = optarg;
+                output_str = options.optarg;
                 break;
             case 'a':
-                amount_str = optarg;
+                amount_str = options.optarg;
                 break;
             case 'n':
                 invert = 1;
                 break;
             case '?':
-                printf ("Usage: dmfmvc [options] <infile>\n\n-o <outfile>  Specify the output file. (defualt none)\n-a <amount>   Specify the volume change. (Can only be positive) (defualt 0)\n-n            Subtract by the amount instead of add.\n\n");
+                throw(7);
                 return 1;
         }
     }
 
-    if (optind <= argc - 2 || argv[optind] == 0){
-        printf ("Usage: dmfmvc [options] <infile>\n\n-o <outfile>  Specify the output file. (defualt none)\n-a <amount>   Specify the volume change. (Can only be positive) (defualt 0)\n-n            Subtract by the amount instead of add.\n");
-        return 1;
+    if ((infile = optparse_arg(&options)) == 0){
+        throw(7);
     }
 
-    if (access(argv[optind], R_OK) == -1){
-        printf ("File doesn't exist! Aborting.\n");
-        return 1;
+    FILE *fp = fopen(infile, "r");
+    if (fp == NULL){
+        throw(1);
     }
+    fclose(fp);
 
     dmf song;
-    int status = fileToDmfType(argv[optind], &song);
+    int status = fileToDmfType(infile, &song);
     if (status) return status;
 
-    if ((size_t)amount_str != 0 || (size_t)amount_str != -1) amount = atoi(amount_str);
+    if ((size_t)amount_str != 0 && (size_t)amount_str != -1) amount = atoi(amount_str);
     if (amount == 0) throw(5); // Not a valid number
     if (amount == -1) throw(6); // Required argument
 
