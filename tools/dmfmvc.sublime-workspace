@@ -244,10 +244,19 @@
 	"buffers":
 	[
 		{
+			"file": "/home/aaron/programming/dmf-parser/inc/dmf-parser.h",
+			"settings":
+			{
+				"buffer_size": 12198,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
 			"file": "/home/aaron/programming/dmfmvc/src/main.c",
 			"settings":
 			{
-				"buffer_size": 4065,
+				"buffer_size": 4085,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -256,7 +265,16 @@
 			"file": "/home/aaron/programming/dmfmvc/Makefile",
 			"settings":
 			{
-				"buffer_size": 625,
+				"buffer_size": 605,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/aaron/programming/dmf-parser/Makefile",
+			"settings":
+			{
+				"buffer_size": 546,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -352,21 +370,23 @@
 	},
 	"expanded_folders":
 	[
-		"/home/aaron/programming/dmfmvc",
-		"/home/aaron/programming/dmfmvc/inc",
-		"/home/aaron/programming/dmfmvc/src"
+		"/home/aaron/programming/dmfmvc"
 	],
 	"file_history":
 	[
+		"/home/aaron/programming/dmf-parser/README.md",
 		"/home/aaron/programming/dmf-parser/inc/dmf-parser.h",
-		"/home/aaron/programming/dmf-parser/inc/test.h",
-		"/home/aaron/programming/dmfmvc/Makefile",
-		"/home/aaron/programming/dmf-parser/src/test.c",
+		"/home/aaron/programming/dmf-parser/Doxyfile",
 		"/home/aaron/programming/dmf-parser/Makefile",
+		"/home/aaron/programming/dmf-parser/src/test.c",
+		"/home/aaron/programming/dmfmvc/Makefile",
 		"/home/aaron/programming/dmfmvc/src/main.c",
+		"/home/aaron/programming/dmf-parser/inc/miniz.h",
+		"/home/aaron/programming/dmfmvc/inc/dmf-parser.h",
+		"/home/aaron/programming/dmfmvc/inc/optparse.h",
+		"/home/aaron/programming/dmf-parser/inc/test.h",
 		"/home/aaron/programming/dmf-parser/src/dmfParser.c",
 		"/home/aaron/programming/dmf-parser/inc/dmfParser.h",
-		"/home/aaron/programming/dmf-parser/inc/miniz.h",
 		"/home/aaron/programming/dmfmvc/tools/dmfmvc.sublime-project",
 		"/home/aaron/programming/dmfmvc/inc/miniz.h",
 		"/home/aaron/programming/dmfmvc/src/dmfParser.c",
@@ -481,15 +501,11 @@
 		"/run/user/1000/gvfs/archive:host=file%253A%252F%252F%252Fhome%252Faaron%252FDownloads%252FChicken.Little.Ace.In.Action-ViTALiTY.iso/Chicken.Little.Ace.In.Action-ViTALiTY/ViTALiTY.nfo",
 		"/home/aaron/programming/genesis-rpg/inc/functions.h",
 		"/home/aaron/programming/genesis-rpg/src/tiles.c",
-		"/home/aaron/programming/sightAsSound/main.py",
-		"/home/aaron/programming/genesis-rpg/src/stateSwitcher.c",
-		"/home/aaron/.bashrc",
-		"/home/aaron/programming/genesis-rpg/src/playerController.c",
-		"/home/aaron/programming/TestROM/tools/buildSongs.sh"
+		"/home/aaron/programming/sightAsSound/main.py"
 	],
 	"find":
 	{
-		"height": 24.0
+		"height": 40.0
 	},
 	"find_in_files":
 	{
@@ -504,6 +520,32 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"panel",
+			"MAINPAGE",
+			"main",
+			"USE_INLINE_TREES",
+			"inline",
+			"files",
+			"file list",
+			"FILES",
+			"file list",
+			"FILE",
+			"src",
+			"INCLUDE",
+			"DISABLE",
+			"files",
+			"function",
+			"functions",
+			"FILES",
+			"src",
+			"include",
+			"INPUT",
+			"input",
+			"MINIZ_USE_UNALIGNED_LOADS_AND_STORES",
+			"optparse_long",
+			"optparse",
+			"fopen",
+			"deflemask",
 			"LIBS",
 			"s16",
 			"u16",
@@ -675,24 +717,54 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 2,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "/home/aaron/programming/dmfmvc/src/main.c",
+					"file": "/home/aaron/programming/dmf-parser/inc/dmf-parser.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4065,
+						"buffer_size": 12198,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								338,
-								338
+								2362,
+								2362
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/home/aaron/programming/dmfmvc/src/main.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4085,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								852,
+								852
 							]
 						],
 						"settings":
@@ -705,24 +777,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 1,
+					"buffer": 2,
 					"file": "/home/aaron/programming/dmfmvc/Makefile",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 625,
+						"buffer_size": 605,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								320,
-								320
+								372,
+								372
 							]
 						],
 						"settings":
@@ -730,10 +802,38 @@
 							"syntax": "Packages/Makefile/Makefile.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 96.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/home/aaron/programming/dmf-parser/Makefile",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 546,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								305,
+								305
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Makefile/Makefile.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 64.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
@@ -741,7 +841,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 24.0
+		"height": 25.0
 	},
 	"input":
 	{
@@ -782,7 +882,7 @@
 	"project": "dmfmvc.sublime-project",
 	"replace":
 	{
-		"height": 44.0
+		"height": 71.0
 	},
 	"save_all_on_build": true,
 	"select_file":

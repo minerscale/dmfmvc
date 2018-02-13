@@ -1,5 +1,6 @@
 TARGET = out/dmfmvc
 CC = gcc
+MAKE = make
 CFLAGS = -Wall -Iinc -flto -O3 -L./lib -ldmf
 CHMOD = chmod
 
@@ -20,7 +21,11 @@ pre-build:
 	mkdir -p out/
 	mkdir -p out/src
 
-out/%.o: %.c $(HEADERS) pre-build
+lib/libdmf.a:
+	make -C dmf-parser/
+	cp dmf-parser/out/libdmf.a lib/
+
+out/%.o: %.c lib/libdmf.a $(HEADERS) pre-build
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
@@ -33,3 +38,5 @@ clean:
 	-rm -f out/*.o
 	-rm -f out/src/*.o
 	-rm -f $(TARGET)
+	-rm -f lib/*.a
+	make -C dmf-parser/ clean
