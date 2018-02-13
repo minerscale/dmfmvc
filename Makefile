@@ -1,5 +1,5 @@
 TARGET = out/dmfmvc
-CC = x86_64-w64-mingw32-gcc
+CC = gcc
 CFLAGS = -Wall -Iinc -flto -O3 -L./lib -ldmf
 CHMOD = chmod
 
