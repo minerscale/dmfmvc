@@ -2,7 +2,7 @@
 
 #define OPTPARSE_IMPLEMENTATION
 #include "optparse.h"
-#include "dmf-parser.h"
+#include "libdmf.h"
 
 // Display error based off what error code was sent
 void throw(int status){
