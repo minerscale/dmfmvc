@@ -23,7 +23,7 @@ pre-build:
 	mkdir -p out/src
 
 lib/libdmf.a:
-	CC=$(CC) AR=$(AR) $(MAKE) -e -C dmf-parser/
+	CC=$(CC) AR=$(AR) $(MAKE) -e -C dmf-parser/ all docs
 	cp dmf-parser/out/libdmf.a lib/
 
 out/%.o: %.c lib/libdmf.a $(HEADERS) pre-build
