@@ -15,5 +15,5 @@ Usage: dmfmvc [options] <infile>
 4. dmfmvc *should* build and the output should be in the out directory, if it doesn't work, and you've tried everything, contact me on discord (Minerscale#9319)
 5. If you're on windows, rename the output file to dmfmvc.exe, stupid windows :/
 
-##Bugs
+## Bugs
 If you find any bugs please make an issue. That would help a lot. :D
