@@ -9,7 +9,11 @@ Usage: dmfmvc [options] <infile>
 
 ## Build instructions:
 
-1. Obtain libdmf.a 
-2. Set the compiler in the makefile to a C compiler, (only tested with gcc and x86_64-w64-mingw32-gcc).
+1. Set the compiler in the makefile to a C compiler, (only tested with gcc and x86_64-w64-mingw32-gcc).
+2. Run make clean
 3. Run make
-4. dmfmvc *should* build, if it doesn't work, and you've tried everything, contact me on discord (Minerscale#9319)
+4. dmfmvc *should* build and the output should be in the out directory, if it doesn't work, and you've tried everything, contact me on discord (Minerscale#9319)
+5. If you're on windows, rename the output file to dmfmvc.exe, stupid windows :/
+
+##Bugs
+If you find any bugs please make an issue. That would help a lot. :D
