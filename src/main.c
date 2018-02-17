@@ -24,12 +24,15 @@ void throw(int status){
                 printf("Somehow this dmf isn't real system. Aborting.\n");
                 break;
             case 5:
-                printf("Invalid volume change amount. Aborting.\n");
+                printf ("DMF file is too big for libdmf to process. Aborting.\n");
                 break;
             case 6:
-                printf("'-a <value>' is required. Aborting\n");
+                printf("Invalid volume change amount. Aborting.\n");
                 break;
             case 7:
+                printf("'-a <value>' is required. Aborting\n");
+                break;
+            case 8:
                 printf ("Usage: dmfmvc [options] <infile>\n\n-o <outfile>  Specify the output file. (defualt none)\n-a <amount>   Specify the volume change. (Can only be positive) (defualt 0)\n-n            Subtract by the amount instead of add.\n");
                 break;
             default:
@@ -65,13 +68,13 @@ int main(int argc, char **argv)
                 invert = 1;
                 break;
             case '?':
-                throw(7);
+                throw(8);
                 return 1;
         }
     }
 
     if ((infile = optparse_arg(&options)) == 0){
-        throw(7);
+        throw(8);
     }
 
     FILE *fp = fopen(infile, "r");
@@ -85,8 +88,8 @@ int main(int argc, char **argv)
     if (status) return status;
 
     if ((size_t)amount_str != 0 && (size_t)amount_str != -1) amount = atoi(amount_str);
-    if (amount == 0) throw(5); // Not a valid number
-    if (amount == -1) throw(6); // Required argument
+    if (amount == 0) throw(6); // Not a valid number
+    if (amount == -1) throw(7); // Required argument
 
     int system_max = 0;
     switch (song.system){
