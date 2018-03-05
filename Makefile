@@ -21,6 +21,7 @@ OBJECTS = $(addprefix out/, $(SRC_C:.c=.o))
 pre-build:
 	mkdir -p out/
 	mkdir -p out/src
+	mkdir -p lib/
 
 lib/libdmf.a:
 	CC=$(CC) AR=$(AR) $(MAKE) -e -C dmf-parser/ all docs
