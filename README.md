@@ -2,8 +2,8 @@
 
 ```
 Usage: dmfmvc [options] <infile>
-	-o <outfile>  Specify the output file. (defualt none)
-	-a <amount>   Specify the volume change. (Can only be positive) 	(defualt 0)
+	-o <outfile>  Specify the output file. (default none)
+	-a <amount>   Specify the volume change. (Can only be positive) 	(default 0)
 	-n            Subtract by the amount instead of add.
 ```
 
@@ -16,4 +16,5 @@ Usage: dmfmvc [options] <infile>
 5. If you're on windows, rename the output file to dmfmvc.exe, stupid windows :/
 
 ## Bugs
+
 If you find any bugs please make an issue. That would help a lot. :D
