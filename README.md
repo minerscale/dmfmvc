@@ -1,4 +1,4 @@
-# dmfmvc - Deflemask Master Volume Changer ![Build Status](https://travis-ci.org/minerscale/dmfmvc.svg?branch=master)
+# dmfmvc - Deflemask Master Volume Changer [![Build Status](https://travis-ci.org/minerscale/dmfmvc.svg?branch=master)](https://travis-ci.org/minerscale/dmfmvc)
 
 ```
 Usage: dmfmvc [options] <infile>
