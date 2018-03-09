@@ -2,7 +2,7 @@ TARGET = out/dmfmvc
 CC = gcc
 AR = ar
 MAKE = make
-CFLAGS = -Wall -Iinc -flto -O3 -L./lib -ldmf
+CFLAGS = -Wall -Iinc -flto -O3 -L./lib -ldmf -std=c99
 CHMOD = chmod
 
 .PHONY: default all clean
