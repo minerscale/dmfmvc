@@ -1,3 +1,10 @@
 language: c
 
-script: make clean && make CC=c99
+cache: ccache
+
+addons:
+  apt:
+    packages:
+      - doxygen
+
+script: make clean && make
